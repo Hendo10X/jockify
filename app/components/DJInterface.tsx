@@ -180,149 +180,124 @@ export default function DJInterface() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black">
-      {/* User Profile Header */}
-      <div className="absolute top-4 left-4 flex items-center gap-2">
-        <div className="w-10 h-10 relative rounded-full overflow-hidden">
-          <Image
-            src={session?.user?.image || '/default-avatar.png'}
-            alt="User Profile"
-            fill
-            className="object-cover"
-          />
-        </div>
-        <div className="flex flex-col">
-          <span className="text-sm font-medium">{session?.user?.name}</span>
-          <button
-            onClick={() => signOut()}
-            className="text-xs text-red-500 hover:text-red-600 transition-colors"
-          >
-            Sign out →
-          </button>
-        </div>
-      </div>
-
-      {/* Logo */}
-      <div className="absolute top-4 right-4">
-        <div className="w-8 h-8 relative">
-          <Image
-            src="/Jockeysvg.svg"
-            alt="AI DJ Logo"
-            fill
-            className="object-contain"
-          />
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-xl mx-auto pt-24 px-4">
-        {/* Playlist Selector */}
-        <div className="mb-8">
-          <div className="relative">
-            <select
-              value={selectedPlaylist}
-              onChange={(e) => setSelectedPlaylist(e.target.value)}
-              className="w-full p-3 pr-10 text-sm border rounded-lg bg-white outline-none appearance-none hover:border-gray-400 transition-colors"
-              disabled={isLoadingPlaylists}
-            >
-              <option value="">Choose a playlist to remix with AI</option>
-              {playlists.map((playlist) => (
-                <option key={playlist.id} value={playlist.id}>
-                  {playlist.name}
-                </option>
-              ))}
-            </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-              {isLoadingPlaylists ? (
-                <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
-              ) : (
-                <svg className="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="none" stroke="currentColor">
-                  <path d="M6 8l4 4 4-4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              )}
+    <div className="min-h-screen bg-white relative flex flex-col">
+      <div className="max-w-[640px] w-full mx-auto px-6 pt-6 mt-10">
+        <div className="flex items-center justify-between">
+          {/* User Profile */}
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 relative rounded-full overflow-hidden">
+              <Image
+                src={session?.user?.image || '/default-avatar.png'}
+                alt="User Profile"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm leading-none text-black">{session?.user?.name}</span>
+              <button
+                onClick={() => signOut()}
+                className="text-xs text-[#FF3B30] hover:text-[#FF3B30]/90 transition-colors text-left"
+              >
+                Sign out
+              </button>
             </div>
           </div>
-          {error && (
-            <p className="text-sm text-red-500 mt-2">{error}</p>
-          )}
-        </div>
 
-        {/* Chat Interface */}
+          {/* Logo */}
+          <div className="w-8 h-8 relative">
+            <Image
+              src="/Jockeysvg.svg"
+              alt="AI DJ Logo"
+              fill
+              className="object-contain"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content - Messages */}
+      <div className="flex-1 max-w-[640px] mx-auto w-full px-6 pt-6 pb-32">
         <div className="space-y-4">
-          <div className="h-[400px] overflow-y-auto space-y-4">
-            {messages.map((message, index) => (
+          {messages.map((message, index) => (
+            <div
+              key={index}
+              className={`flex ${
+                message.role === 'user' ? 'justify-end' : 'justify-start'
+              }`}
+            >
               <div
-                key={index}
-                className={`flex ${
-                  message.role === 'user' ? 'justify-end' : 'justify-start'
+                className={`max-w-[75%] rounded-[20px] px-4 py-3 ${
+                  message.role === 'user'
+                    ? 'bg-black text-white'
+                    : 'bg-[#F2F2F7] text-black'
                 }`}
               >
-                <div
-                  className={`max-w-[80%] rounded-lg p-3 ${
-                    message.role === 'user'
-                      ? 'bg-black text-white'
-                      : 'bg-gray-100'
-                  }`}
-                >
-                  {message.role === 'user' ? (
-                    <p className="text-sm">{message.content}</p>
-                  ) : (
-                    <div className="space-y-2 text-sm">
-                      {formatMessage(message.content)}
-                    </div>
-                  )}
-                </div>
+                {message.role === 'assistant' ? (
+                  <div className="text-[15px] leading-5 text-black">
+                    {formatMessage(message.content)}
+                  </div>
+                ) : (
+                  <p className="text-[15px] leading-5">
+                    {message.content}
+                  </p>
+                )}
               </div>
+            </div>
+          ))}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="bg-[#F2F2F7] rounded-[20px] px-4 py-3 flex items-center gap-2">
+                <Loader2 className="h-5 w-5 animate-spin text-[#8E8E93]" />
+                <span className="text-[15px] leading-5 text-black">Thinking...</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Bottom Bar - Fixed at bottom */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white  border-[#F2F2F7] py-4">
+        <div className="max-w-[640px] mx-auto px-6 space-y-2">
+          {/* Playlist Selector */}
+          <select
+            value={selectedPlaylist}
+            onChange={(e) => setSelectedPlaylist(e.target.value)}
+            className="w-full px-4 py-[14px] text-[15px] text-black bg-white rounded-lg font-inter outline-none appearance-none cursor-pointer border border-[#F2F2F7]"
+            disabled={isLoadingPlaylists}
+          >
+            <option value="" className="font-inter">Choose a playlist to remix with AI</option>
+            {playlists.map((playlist) => (
+              <option key={playlist.id} value={playlist.id} className="font-inter">
+                {playlist.name}
+              </option>
             ))}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-gray-100 rounded-lg p-3 flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm">Thinking...</span>
-                </div>
-              </div>
-            )}
-          </div>
+          </select>
 
           {/* Input Form */}
-          <form onSubmit={handleSubmit} className="relative">
+          <div className="relative">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask the AI to remix your playlist in any style you want"
-              className="w-full p-4 pr-12 text-sm border rounded-lg bg-white outline-none"
+              className="w-full px-4 py-4 text-[16px] bg-[#F2F2F7] rounded-lg outline-none placeholder:text-[#8E8E93] text-black"
               disabled={!selectedPlaylist || isLoading}
             />
             <button
-              type="submit"
+              onClick={handleSubmit}
               disabled={isLoading || !selectedPlaylist || !input.trim()}
-              className="absolute right-3 top-1/2 -translate-y-1/2"
+              className="absolute right-3 top-1/2 -translate-y-1/2 bg-black text-white p-2 rounded-full disabled:opacity-50"
             >
               {isLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+                <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
-                <svg
-                  viewBox="0 0 24 24"
-                  className={`h-5 w-5 ${
-                    !selectedPlaylist || !input.trim()
-                      ? 'text-gray-300'
-                      : 'text-black'
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                >
-                  <path
-                    d="M7 11L12 6L17 11M12 18V7"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    transform="rotate(90, 12, 12)"
-                  />
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               )}
             </button>
-          </form>
+          </div>
         </div>
       </div>
     </div>
