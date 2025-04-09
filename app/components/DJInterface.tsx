@@ -264,6 +264,53 @@ export default function DJInterface() {
       <div className="flex-1 max-w-[640px] mx-auto w-full px-6 pt-6 pb-32">
         <AnimatePresence mode="popLayout">
           <div className="space-y-4">
+            {messages.length === 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col items-center justify-center min-h-[400px] text-center"
+              >
+                <div className="p-6 max-w-[400px]">
+                  <p className="text-[14px] text-gray-400 leading-relaxed">
+                    Select a playlist below and ask me to remix it in any style you want.
+                  </p>
+                  <div className="mt-8 flex flex-wrap gap-2 justify-center">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="px-4 py-2 rounded-full bg-[#F2F2F7] text-[13px] text-gray-600 hover:bg-[#E5E5EA] transition-colors"
+                      onClick={() => setInput("Turn this playlist into a lofi hip hop mix")}
+                    >
+                      "Turn this into lofi hip hop"
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="px-4 py-2 rounded-full bg-[#F2F2F7] text-[13px] text-gray-600 hover:bg-[#E5E5EA] transition-colors"
+                      onClick={() => setInput("Create a high energy dance remix of these songs")}
+                    >
+                      "Make a dance remix"
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="px-4 py-2 rounded-full bg-[#F2F2F7] text-[13px] text-gray-600 hover:bg-[#E5E5EA] transition-colors"
+                      onClick={() => setInput("Mix these songs in a chill ambient style")}
+                    >
+                      "Create a chill ambient mix"
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="px-4 py-2 rounded-full bg-[#F2F2F7] text-[13px] text-gray-600 hover:bg-[#E5E5EA] transition-colors"
+                      onClick={() => setInput("Blend these tracks into a smooth jazz style")}
+                    >
+                      "Turn into smooth jazz"
+                    </motion.button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
             {messages.map((message, index) => (
               <motion.div
                 key={index}
