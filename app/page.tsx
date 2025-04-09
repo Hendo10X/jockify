@@ -39,7 +39,7 @@ export default function Home() {
             className="w-24 h-24 relative mb-4"
           >
             <Image
-              src="/Jockeysvg.svg"
+              src="/Jockify.svg"
               alt="AI DJ Logo"
               fill
               className="object-contain"
@@ -65,7 +65,7 @@ export default function Home() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             transition={{ delay: 0.4, duration: 0.4 }}
-            className="mt-8 px-8 py-3 rounded-full bg-green-400 text-green-900 font-medium hover:bg-green-300 transition-colors duration-200 text-sm"
+            className="mt-8 px-8 py-3 rounded-full bg-black text-white font-medium hover:bg-gray-900 transition-colors duration-200 text-sm"
           >
             Login with spotify
           </motion.a>

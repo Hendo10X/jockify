@@ -158,41 +158,54 @@ export default function DJInterface() {
   };
 
   const formatMessage = (content: string) => {
-    // Split the content into sections
-    const sections = content.split('\n\n');
+    // Remove duplicate numbers at the start of lines
+    content = content.replace(/^\d+\.\s*\d+\./gm, (match) => match.split('.')[0] + '.');
     
-    return sections.map((section, index) => {
-      // Check if it's a bullet point list
-      if (section.startsWith('- ')) {
-        const items = section.split('\n').map(item => item.replace('- ', ''));
-        return (
-          <ul key={index} className="list-disc pl-4 space-y-1">
-            {items.map((item, i) => (
-              <li key={i} className="text-sm">{item}</li>
-            ))}
-          </ul>
-        );
-      }
-      
-      // Check if it's a numbered list
-      if (section.match(/^\d+\./)) {
-        const items = section.split('\n').map(item => item.replace(/^\d+\.\s*/, ''));
-        return (
-          <ol key={index} className="list-decimal pl-4 space-y-1">
-            {items.map((item, i) => (
-              <li key={i} className="text-sm">{item}</li>
-            ))}
-          </ol>
-        );
-      }
-      
-      // Regular paragraph
-      return (
-        <p key={index} className="text-sm mb-2">
-          {section}
-        </p>
-      );
-    });
+    // Convert **text** to proper formatting
+    content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // Split into paragraphs and format
+    const paragraphs = content.split('\n\n').map(para => para.trim());
+    
+    return (
+      <div className="space-y-4">
+        {paragraphs.map((paragraph, index) => {
+          // Check if it's a heading (starts with "General" or similar keywords)
+          if (paragraph.toLowerCase().includes('general') || 
+              paragraph.toLowerCase().includes('approach') ||
+              paragraph.toLowerCase().includes('blueprint')) {
+            return (
+              <h3 key={index} className="font-medium text-[15px] text-black mb-2">
+                {paragraph.replace(/\*\*/g, '')}
+              </h3>
+            );
+          }
+          
+          // Check if it's a numbered point
+          if (/^\d+\./.test(paragraph)) {
+            return (
+              <div key={index} className="pl-4">
+                <p 
+                  className="text-[15px] leading-relaxed text-gray-800"
+                  dangerouslySetInnerHTML={{ 
+                    __html: paragraph.replace(/^\d+\.\s*/, '') 
+                  }}
+                />
+              </div>
+            );
+          }
+          
+          // Regular paragraph
+          return (
+            <p 
+              key={index} 
+              className="text-[15px] leading-relaxed text-gray-800"
+              dangerouslySetInnerHTML={{ __html: paragraph }}
+            />
+          );
+        })}
+      </div>
+    );
   };
 
   const selectedPlaylistName = playlists.find(p => p.id === selectedPlaylist)?.name;
@@ -226,10 +239,10 @@ export default function DJInterface() {
               />
             </div>
             <div className="flex flex-col">
-              <span className="text-sm leading-none text-black">{session?.user?.name}</span>
+              <span className="text-sm leading-none text-black px-1 py-0.5">{session?.user?.name}</span>
               <button
                 onClick={() => signOut()}
-                className="text-xs text-[#FF3B30] hover:text-[#FF3B30]/90 transition-colors text-left"
+                className="text-[12px] text-[#FF3B30] hover:text-[#FF3B30]/90 px-1 py-0.5 rounded-sm hover:bg-pink-50 transition-colors text-left"
               >
                 Sign out
               </button>
@@ -249,7 +262,7 @@ export default function DJInterface() {
               className="w-full h-full"
             >
               <Image
-                src="/Jockeysvg.svg"
+                src="/Jockify.svg"
                 alt="AI DJ Logo"
                 fill
                 className="object-contain"
@@ -325,18 +338,18 @@ export default function DJInterface() {
                 <motion.div
                   initial={{ scale: 0.9 }}
                   animate={{ scale: 1 }}
-                  className={`max-w-[75%] rounded-[20px] px-4 py-3 ${
+                  className={`max-w-[85%] rounded-[20px] px-6 py-4 ${
                     message.role === 'user'
                       ? 'bg-black text-white'
-                      : 'bg-[#F2F2F7] text-black'
+                      : 'bg-[#F8F8FA] text-black shadow-sm'
                   }`}
                 >
                   {message.role === 'assistant' ? (
-                    <div className="text-[15px] leading-5 text-black">
+                    <div className="text-[15px] leading-relaxed">
                       {formatMessage(message.content)}
                     </div>
                   ) : (
-                    <p className="text-[15px] leading-5">
+                    <p className="text-[15px] leading-relaxed">
                       {message.content}
                     </p>
                   )}
@@ -375,7 +388,7 @@ export default function DJInterface() {
               className="w-full px-4 py-[14px] text-[15px] text-black bg-white rounded-lg font-inter outline-none cursor-pointer border border-[#F2F2F7] flex items-center justify-between"
               disabled={isLoadingPlaylists}
             >
-              <span className="truncate font-inter">
+              <span className="truncate font-inter text-[14px] text-emerald-500">
                 {selectedPlaylistName || "Choose a playlist to remix with AI"}
               </span>
               <ChevronDown className={`h-4 w-4 text-black transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
