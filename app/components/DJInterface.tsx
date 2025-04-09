@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
-import { Music, Play, Loader2 } from 'lucide-react';
+import { Music, Play, Loader2, LogOut } from 'lucide-react';
+import Image from 'next/image';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -21,6 +22,7 @@ interface SpotifySession {
   accessToken: string;
   user?: {
     name?: string;
+    image?: string;
   };
 }
 
@@ -178,53 +180,76 @@ export default function DJInterface() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6">
-      <Card className="border-none shadow-none bg-transparent">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-xl font-instrument flex items-center gap-2">
-            <Music className="h-5 w-5" />
-            Select a Playlist
-          </CardTitle>
-          <CardDescription className="text-sm font-jetbrains text-muted-foreground">
-            Choose a playlist to remix with AI
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+    <div className="min-h-screen bg-white text-black">
+      {/* User Profile Header */}
+      <div className="absolute top-4 left-4 flex items-center gap-2">
+        <div className="w-10 h-10 relative rounded-full overflow-hidden">
+          <Image
+            src={session?.user?.image || '/default-avatar.png'}
+            alt="User Profile"
+            fill
+            className="object-cover"
+          />
+        </div>
+        <div className="flex flex-col">
+          <span className="text-sm font-medium">{session?.user?.name}</span>
+          <button
+            onClick={() => signOut()}
+            className="text-xs text-red-500 hover:text-red-600 transition-colors"
+          >
+            Sign out →
+          </button>
+        </div>
+      </div>
+
+      {/* Logo */}
+      <div className="absolute top-4 right-4">
+        <div className="w-8 h-8 relative">
+          <Image
+            src="/Jockeysvg.svg"
+            alt="AI DJ Logo"
+            fill
+            className="object-contain"
+          />
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-xl mx-auto pt-24 px-4">
+        {/* Playlist Selector */}
+        <div className="mb-8">
           <div className="relative">
             <select
               value={selectedPlaylist}
               onChange={(e) => setSelectedPlaylist(e.target.value)}
-              className="w-full p-2 border rounded-lg bg-background/50 backdrop-blur-sm outline-none font-jetbrains text-sm"
+              className="w-full p-3 pr-10 text-sm border rounded-lg bg-white outline-none appearance-none hover:border-gray-400 transition-colors"
               disabled={isLoadingPlaylists}
             >
-              <option value="">Select a playlist</option>
+              <option value="">Choose a playlist to remix with AI</option>
               {playlists.map((playlist) => (
                 <option key={playlist.id} value={playlist.id}>
                   {playlist.name}
                 </option>
               ))}
             </select>
-            {isLoadingPlaylists && (
-              <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-              </div>
-            )}
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+              {isLoadingPlaylists ? (
+                <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+              ) : (
+                <svg className="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                  <path d="M6 8l4 4 4-4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </div>
           </div>
           {error && (
-            <p className="text-sm text-destructive mt-2 font-jetbrains">{error}</p>
+            <p className="text-sm text-red-500 mt-2">{error}</p>
           )}
-        </CardContent>
-      </Card>
+        </div>
 
-      <Card className="border-none shadow-none bg-transparent">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-xl font-instrument">AI DJ Chat</CardTitle>
-          <CardDescription className="text-sm font-jetbrains text-muted-foreground">
-            Ask the AI to remix your playlist in any style you want
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="h-[400px] overflow-y-auto space-y-4 pr-2">
+        {/* Chat Interface */}
+        <div className="space-y-4">
+          <div className="h-[400px] overflow-y-auto space-y-4">
             {messages.map((message, index) => (
               <div
                 key={index}
@@ -235,14 +260,14 @@ export default function DJInterface() {
                 <div
                   className={`max-w-[80%] rounded-lg p-3 ${
                     message.role === 'user'
-                      ? 'bg-primary text-primary-foreground font-jetbrains'
-                      : 'bg-muted font-instrument'
+                      ? 'bg-black text-white'
+                      : 'bg-gray-100'
                   }`}
                 >
                   {message.role === 'user' ? (
-                    message.content
+                    <p className="text-sm">{message.content}</p>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-2 text-sm">
                       {formatMessage(message.content)}
                     </div>
                   )}
@@ -251,39 +276,55 @@ export default function DJInterface() {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-muted rounded-lg p-3 flex items-center gap-2 text-sm font-jetbrains">
+                <div className="bg-gray-100 rounded-lg p-3 flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Thinking...
+                  <span className="text-sm">Thinking...</span>
                 </div>
               </div>
             )}
           </div>
-        </CardContent>
-        <CardFooter>
-          <form onSubmit={handleSubmit} className="w-full flex gap-2">
+
+          {/* Input Form */}
+          <form onSubmit={handleSubmit} className="relative">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask the AI DJ to remix your playlist..."
-              className="flex-1 p-2 border rounded-lg bg-background/50 backdrop-blur-sm outline-none text-sm font-jetbrains"
+              placeholder="Ask the AI to remix your playlist in any style you want"
+              className="w-full p-4 pr-12 text-sm border rounded-lg bg-white outline-none"
               disabled={!selectedPlaylist || isLoading}
             />
-            <Button
+            <button
               type="submit"
               disabled={isLoading || !selectedPlaylist || !input.trim()}
-              className="flex items-center gap-2 text-sm font-jetbrains"
+              className="absolute right-3 top-1/2 -translate-y-1/2"
             >
               {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
               ) : (
-                <Play className="h-4 w-4" />
+                <svg
+                  viewBox="0 0 24 24"
+                  className={`h-5 w-5 ${
+                    !selectedPlaylist || !input.trim()
+                      ? 'text-gray-300'
+                      : 'text-black'
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <path
+                    d="M7 11L12 6L17 11M12 18V7"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    transform="rotate(90, 12, 12)"
+                  />
+                </svg>
               )}
-              Send
-            </Button>
+            </button>
           </form>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 } 

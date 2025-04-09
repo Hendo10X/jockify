@@ -1,30 +1,31 @@
-import NextAuth from 'next-auth';
+import { NextAuthOptions } from 'next-auth';
+import NextAuth from 'next-auth/next';
 import SpotifyProvider from 'next-auth/providers/spotify';
 
-const scope = 'user-read-email user-read-private playlist-read-private playlist-read-collaborative user-read-playback-state user-modify-playback-state';
+const scope = 'playlist-read-private playlist-read-collaborative user-read-email user-read-private';
 
-export const authOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [
     SpotifyProvider({
       clientId: process.env.SPOTIFY_CLIENT_ID!,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
       authorization: {
-        params: { 
-          scope,
-          redirect_uri: 'http://localhost:3000/api/auth/callback/spotify'
-        },
+        params: { scope },
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, account }: any) {
+    async jwt({ token, account }) {
       if (account) {
         token.accessToken = account.access_token;
       }
       return token;
     },
-    async session({ session, token }: any) {
-      session.accessToken = token.accessToken;
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.image = token.picture as string;
+        session.accessToken = token.accessToken as string;
+      }
       return session;
     },
   },
