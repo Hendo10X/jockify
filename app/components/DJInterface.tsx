@@ -7,6 +7,7 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Music, Play, Loader2, LogOut } from 'lucide-react';
 import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -180,11 +181,25 @@ export default function DJInterface() {
   };
 
   return (
-    <div className="min-h-screen bg-white relative flex flex-col">
-      <div className="max-w-[640px] w-full mx-auto px-6 pt-6 mt-10">
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      className="min-h-screen bg-white relative flex flex-col"
+    >
+      <motion.div 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="max-w-[640px] w-full mx-auto px-6 pt-6 mt-10"
+      >
         <div className="flex items-center justify-between">
           {/* User Profile */}
-          <div className="flex items-center gap-2">
+          <motion.div 
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="flex items-center gap-2"
+          >
             <div className="w-8 h-8 relative rounded-full overflow-hidden">
               <Image
                 src={session?.user?.image || '/default-avatar.png'}
@@ -202,62 +217,92 @@ export default function DJInterface() {
                 Sign out
               </button>
             </div>
-          </div>
+          </motion.div>
 
           {/* Logo */}
           <div className="w-8 h-8 relative">
-            <Image
-              src="/Jockeysvg.svg"
-              alt="AI DJ Logo"
-              fill
-              className="object-contain"
-            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ 
+                delay: 0.3,
+                duration: 0.5,
+                ease: "easeOut"
+              }}
+              className="w-full h-full"
+            >
+              <Image
+                src="/Jockeysvg.svg"
+                alt="AI DJ Logo"
+                fill
+                className="object-contain"
+                priority
+              />
+            </motion.div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Main Content - Messages */}
       <div className="flex-1 max-w-[640px] mx-auto w-full px-6 pt-6 pb-32">
-        <div className="space-y-4">
-          {messages.map((message, index) => (
-            <div
-              key={index}
-              className={`flex ${
-                message.role === 'user' ? 'justify-end' : 'justify-start'
-              }`}
-            >
-              <div
-                className={`max-w-[75%] rounded-[20px] px-4 py-3 ${
-                  message.role === 'user'
-                    ? 'bg-black text-white'
-                    : 'bg-[#F2F2F7] text-black'
+        <AnimatePresence mode="popLayout">
+          <div className="space-y-4">
+            {messages.map((message, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className={`flex ${
+                  message.role === 'user' ? 'justify-end' : 'justify-start'
                 }`}
               >
-                {message.role === 'assistant' ? (
-                  <div className="text-[15px] leading-5 text-black">
-                    {formatMessage(message.content)}
-                  </div>
-                ) : (
-                  <p className="text-[15px] leading-5">
-                    {message.content}
-                  </p>
-                )}
-              </div>
-            </div>
-          ))}
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-[#F2F2F7] rounded-[20px] px-4 py-3 flex items-center gap-2">
-                <Loader2 className="h-5 w-5 animate-spin text-[#8E8E93]" />
-                <span className="text-[15px] leading-5 text-black">Thinking...</span>
-              </div>
-            </div>
-          )}
-        </div>
+                <motion.div
+                  initial={{ scale: 0.9 }}
+                  animate={{ scale: 1 }}
+                  className={`max-w-[75%] rounded-[20px] px-4 py-3 ${
+                    message.role === 'user'
+                      ? 'bg-black text-white'
+                      : 'bg-[#F2F2F7] text-black'
+                  }`}
+                >
+                  {message.role === 'assistant' ? (
+                    <div className="text-[15px] leading-5 text-black">
+                      {formatMessage(message.content)}
+                    </div>
+                  ) : (
+                    <p className="text-[15px] leading-5">
+                      {message.content}
+                    </p>
+                  )}
+                </motion.div>
+              </motion.div>
+            ))}
+            {isLoading && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="flex justify-start"
+              >
+                <div className="bg-[#F2F2F7] rounded-[20px] px-4 py-3 flex items-center gap-2">
+                  <Loader2 className="h-5 w-5 animate-spin text-[#8E8E93]" />
+                  <span className="text-[15px] leading-5 text-black">Thinking...</span>
+                </div>
+              </motion.div>
+            )}
+          </div>
+        </AnimatePresence>
       </div>
 
       {/* Bottom Bar - Fixed at bottom */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white  border-[#F2F2F7] py-4">
+      <motion.div 
+        initial={{ y: 100 }}
+        animate={{ y: 0 }}
+        transition={{ delay: 0.4, type: "spring", stiffness: 100 }}
+        className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#F2F2F7] py-4"
+      >
         <div className="max-w-[640px] mx-auto px-6 space-y-2">
           {/* Playlist Selector */}
           <div className="relative">
@@ -290,7 +335,9 @@ export default function DJInterface() {
               className="w-full px-4 py-4 text-[16px] bg-[#F2F2F7] rounded-lg outline-none placeholder:text-[#8E8E93] text-black resize-none h-[100px]"
               disabled={!selectedPlaylist || isLoading}
             />
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={handleSubmit}
               disabled={isLoading || !selectedPlaylist || !input.trim()}
               className="absolute right-3 bottom-3 bg-black text-white px-4 py-2 rounded-full disabled:opacity-50 text-sm font-medium"
@@ -300,10 +347,10 @@ export default function DJInterface() {
               ) : (
                 "Send"
               )}
-            </button>
+            </motion.button>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 } 
