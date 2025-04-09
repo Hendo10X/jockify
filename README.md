@@ -1,5 +1,7 @@
 # Jockify - AI-Powered Music Remix Assistant
 
+> Transform your Spotify playlists with AI. Select any playlist and instantly get AI-powered remix suggestions in various styles - from lofi hip hop to dance remixes. Built with Next.js, Spotify API, and Google's Gemini AI.
+
 Jockify is a modern web application that allows users to transform their Spotify playlists using AI. With a sleek, intuitive interface, users can select their playlists and request AI-powered remixes in various styles, from lofi hip hop to dance remixes.
 
 ![Jockify Screenshot](public/screenshot.png)
