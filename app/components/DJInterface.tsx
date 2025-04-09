@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
-import { Music, Play, Loader2, LogOut } from 'lucide-react';
+import { Music, Play, Loader2, LogOut, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -17,6 +17,7 @@ interface Message {
 interface Playlist {
   id: string;
   name: string;
+  images: { url: string }[];
 }
 
 interface SpotifySession {
@@ -36,12 +37,25 @@ export default function DJInterface() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingPlaylists, setIsLoadingPlaylists] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (session?.accessToken) {
       loadPlaylists();
     }
   }, [session]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const loadPlaylists = async () => {
     try {
@@ -63,7 +77,8 @@ export default function DJInterface() {
       if (data && data.items) {
         setPlaylists(data.items.map((item: any) => ({
           id: item.id,
-          name: item.name
+          name: item.name,
+          images: item.images || []
         })));
       }
     } catch (error) {
@@ -179,6 +194,8 @@ export default function DJInterface() {
       );
     });
   };
+
+  const selectedPlaylistName = playlists.find(p => p.id === selectedPlaylist)?.name;
 
   return (
     <motion.div 
@@ -301,29 +318,64 @@ export default function DJInterface() {
         initial={{ y: 100 }}
         animate={{ y: 0 }}
         transition={{ delay: 0.4, type: "spring", stiffness: 100 }}
-        className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#F2F2F7] py-4"
+        className="fixed bottom-0 left-0 right-0 bg-white  py-4"
       >
         <div className="max-w-[640px] mx-auto px-6 space-y-2">
-          {/* Playlist Selector */}
-          <div className="relative">
-            <select
-              value={selectedPlaylist}
-              onChange={(e) => setSelectedPlaylist(e.target.value)}
-              className="w-full px-4 py-[14px] text-[15px] text-black bg-white rounded-lg font-inter outline-none appearance-none cursor-pointer border border-[#F2F2F7]"
+          {/* Custom Playlist Selector */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="w-full px-4 py-[14px] text-[15px] text-black bg-white rounded-lg font-inter outline-none cursor-pointer border border-[#F2F2F7] flex items-center justify-between"
               disabled={isLoadingPlaylists}
             >
-              <option value="" className="font-inter">Choose a playlist to remix with AI</option>
-              {playlists.map((playlist) => (
-                <option key={playlist.id} value={playlist.id} className="font-inter">
-                  {playlist.name}
-                </option>
-              ))}
-            </select>
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-              <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1 1.5L6 6.5L11 1.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
+              <span className="truncate font-inter">
+                {selectedPlaylistName || "Choose a playlist to remix with AI"}
+              </span>
+              <ChevronDown className={`h-4 w-4 text-black transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isDropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.2 }}
+                className="absolute bottom-full mb-2 left-0 w-full bg-white rounded-lg border border-[#F2F2F7] shadow-lg max-h-[400px] overflow-y-auto"
+              >
+                <div className="grid grid-cols-2 gap-2 p-2">
+                  {playlists.map((playlist) => (
+                    <motion.button
+                      key={playlist.id}
+                      onClick={() => {
+                        setSelectedPlaylist(playlist.id);
+                        setIsDropdownOpen(false);
+                      }}
+                      whileHover={{ backgroundColor: '#F2F2F7' }}
+                      className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
+                        selectedPlaylist === playlist.id ? 'bg-[#F2F2F7]' : ''
+                      }`}
+                    >
+                      <div className="relative w-12 h-12 rounded-md overflow-hidden flex-shrink-0 bg-[#F2F2F7]">
+                        <Image
+                          src={playlist.images[0]?.url || '/default-playlist.png'}
+                          alt={playlist.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="flex flex-col items-start text-left">
+                        <span className="text-sm font-medium text-black font-inter line-clamp-1">
+                          {playlist.name}
+                        </span>
+                        <span className="text-xs text-[#666666] font-inter">
+                          Playlist
+                        </span>
+                      </div>
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
           </div>
 
           {/* Input Form */}
