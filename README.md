@@ -2,7 +2,6 @@
 
 Jockify is a modern web application that allows users to transform their Spotify playlists using AI. With a sleek, intuitive interface, users can select their playlists and request AI-powered remixes in various styles, from lofi hip hop to dance remixes.
 
-![Jockify Screenshot](public/screenshot.png)
 
 ## Features
 
@@ -111,4 +110,4 @@ For support, please open an issue in the GitHub repository or contact the mainta
 
 ---
 
-Made with ❤️ by [Your Name]
+Made with ❤️ by Hendo
