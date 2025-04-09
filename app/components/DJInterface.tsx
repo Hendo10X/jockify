@@ -260,41 +260,45 @@ export default function DJInterface() {
       <div className="fixed bottom-0 left-0 right-0 bg-white  border-[#F2F2F7] py-4">
         <div className="max-w-[640px] mx-auto px-6 space-y-2">
           {/* Playlist Selector */}
-          <select
-            value={selectedPlaylist}
-            onChange={(e) => setSelectedPlaylist(e.target.value)}
-            className="w-full px-4 py-[14px] text-[15px] text-black bg-white rounded-lg font-inter outline-none appearance-none cursor-pointer border border-[#F2F2F7]"
-            disabled={isLoadingPlaylists}
-          >
-            <option value="" className="font-inter">Choose a playlist to remix with AI</option>
-            {playlists.map((playlist) => (
-              <option key={playlist.id} value={playlist.id} className="font-inter">
-                {playlist.name}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              value={selectedPlaylist}
+              onChange={(e) => setSelectedPlaylist(e.target.value)}
+              className="w-full px-4 py-[14px] text-[15px] text-black bg-white rounded-lg font-inter outline-none appearance-none cursor-pointer border border-[#F2F2F7]"
+              disabled={isLoadingPlaylists}
+            >
+              <option value="" className="font-inter">Choose a playlist to remix with AI</option>
+              {playlists.map((playlist) => (
+                <option key={playlist.id} value={playlist.id} className="font-inter">
+                  {playlist.name}
+                </option>
+              ))}
+            </select>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+              <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 1.5L6 6.5L11 1.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+          </div>
 
           {/* Input Form */}
           <div className="relative">
-            <input
-              type="text"
+            <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask the AI to remix your playlist in any style you want"
-              className="w-full px-4 py-4 text-[16px] bg-[#F2F2F7] rounded-lg outline-none placeholder:text-[#8E8E93] text-black"
+              className="w-full px-4 py-4 text-[16px] bg-[#F2F2F7] rounded-lg outline-none placeholder:text-[#8E8E93] text-black resize-none h-[100px]"
               disabled={!selectedPlaylist || isLoading}
             />
             <button
               onClick={handleSubmit}
               disabled={isLoading || !selectedPlaylist || !input.trim()}
-              className="absolute right-3 top-1/2 -translate-y-1/2 bg-black text-white p-2 rounded-full disabled:opacity-50"
+              className="absolute right-3 bottom-3 bg-black text-white px-4 py-2 rounded-full disabled:opacity-50 text-sm font-medium"
             >
               {isLoading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                "Send"
               )}
             </button>
           </div>
