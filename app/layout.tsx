@@ -12,7 +12,7 @@ const instrument = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "AI DJ - Remix Your Playlists",
+  title: "Jockify - Remix Your Playlists",
   description: "Remix your Spotify playlists with AI",
 };
 

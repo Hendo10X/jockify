@@ -400,39 +400,60 @@ export default function DJInterface() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.2 }}
-                className="absolute bottom-full mb-2 left-0 w-full bg-white rounded-lg border border-[#F2F2F7] shadow-lg max-h-[400px] overflow-y-auto"
+                className="absolute bottom-full mb-2 left-0 w-full bg-white rounded-lg border border-[#F2F2F7] shadow-lg max-h-[400px] overflow-y-auto z-50"
               >
                 <div className="grid grid-cols-2 gap-2 p-2">
-                  {playlists.map((playlist) => (
-                    <motion.button
-                      key={playlist.id}
-                      onClick={() => {
-                        setSelectedPlaylist(playlist.id);
-                        setIsDropdownOpen(false);
-                      }}
-                      whileHover={{ backgroundColor: '#F2F2F7' }}
-                      className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                        selectedPlaylist === playlist.id ? 'bg-[#F2F2F7]' : ''
-                      }`}
-                    >
-                      <div className="relative w-12 h-12 rounded-md overflow-hidden flex-shrink-0 bg-[#F2F2F7]">
-                        <Image
-                          src={playlist.images[0]?.url || '/default-playlist.png'}
-                          alt={playlist.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="flex flex-col items-start text-left">
-                        <span className="text-sm font-medium text-black font-inter line-clamp-1">
-                          {playlist.name}
-                        </span>
-                        <span className="text-xs text-[#666666] font-inter">
-                          Playlist
-                        </span>
-                      </div>
-                    </motion.button>
-                  ))}
+                  {isLoadingPlaylists ? (
+                    <div className="col-span-2 flex items-center justify-center py-4">
+                      <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+                      <span className="ml-2 text-sm text-gray-500">Loading playlists...</span>
+                    </div>
+                  ) : playlists.length === 0 ? (
+                    <div className="col-span-2 text-center py-4 text-sm text-gray-500">
+                      No playlists found
+                    </div>
+                  ) : (
+                    playlists.map((playlist) => (
+                      <motion.button
+                        key={playlist.id}
+                        onClick={() => {
+                          setSelectedPlaylist(playlist.id);
+                          setIsDropdownOpen(false);
+                        }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className={`flex items-center gap-3 p-3 rounded-lg transition-all ${
+                          selectedPlaylist === playlist.id 
+                            ? 'bg-[#F8F8FA] border border-[#E5E5EA]' 
+                            : 'hover:bg-[#F8F8FA] border border-transparent'
+                        }`}
+                      >
+                        <div className="relative w-12 h-12 rounded-md overflow-hidden flex-shrink-0 bg-[#F8F8FA]">
+                          {playlist.images[0]?.url ? (
+                            <Image
+                              src={playlist.images[0].url}
+                              alt={playlist.name}
+                              fill
+                              className="object-cover"
+                              sizes="48px"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Music className="h-6 w-6 text-gray-400" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col items-start text-left min-w-0">
+                          <span className="text-sm font-medium text-black truncate w-full">
+                            {playlist.name}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            Playlist
+                          </span>
+                        </div>
+                      </motion.button>
+                    ))
+                  )}
                 </div>
               </motion.div>
             )}
