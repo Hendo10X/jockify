@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession, signOut, signIn } from 'next-auth/react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Music, Play, Loader2, LogOut, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -69,6 +70,16 @@ export default function DJInterface() {
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          toast.error('Your session has expired. Please sign in again.', {
+            duration: 5000,
+            action: {
+              label: 'Sign In',
+              onClick: () => signIn('spotify'),
+            },
+          });
+          return;
+        }
         throw new Error('Failed to fetch playlists');
       }
 
@@ -110,6 +121,16 @@ export default function DJInterface() {
       );
 
       if (!tracksResponse.ok) {
+        if (tracksResponse.status === 401) {
+          toast.error('Your session has expired. Please sign in again.', {
+            duration: 5000,
+            action: {
+              label: 'Sign In',
+              onClick: () => signIn('spotify'),
+            },
+          });
+          return;
+        }
         const errorData = await tracksResponse.json();
         throw new Error(`Failed to fetch playlist tracks: ${errorData.error?.message || 'Unknown error'}`);
       }
@@ -157,6 +178,117 @@ export default function DJInterface() {
     }
   };
 
+  const analyzePlaylist = async () => {
+    if (!selectedPlaylist) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // First, get the playlist details
+      const playlistResponse = await fetch(
+        `https://api.spotify.com/v1/playlists/${selectedPlaylist}`,
+        {
+          headers: {
+            Authorization: `Bearer ${session?.accessToken}`,
+          },
+        }
+      );
+
+      if (!playlistResponse.ok) {
+        if (playlistResponse.status === 401) {
+          toast.error('Your session has expired. Please sign in again.', {
+            duration: 5000,
+            action: {
+              label: 'Sign In',
+              onClick: () => signIn('spotify'),
+            },
+          });
+          return;
+        }
+        throw new Error('Failed to fetch playlist details');
+      }
+
+      const playlistDetails = await playlistResponse.json();
+      
+      // Next, get the playlist tracks like in handleSubmit
+      const tracksResponse = await fetch(
+        `https://api.spotify.com/v1/playlists/${selectedPlaylist}/tracks`,
+        {
+          headers: {
+            Authorization: `Bearer ${session?.accessToken}`,
+          },
+        }
+      );
+
+      if (!tracksResponse.ok) {
+        throw new Error('Failed to fetch playlist tracks');
+      }
+
+      const playlistData = await tracksResponse.json();
+      const tracks = playlistData.items.map((item: any) => ({
+        name: item.track.name,
+        artist: item.track.artists[0]?.name,
+        album: item.track.album?.name
+      }));
+
+      if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
+        throw new Error('Gemini API key is not configured');
+      }
+
+      const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+
+      let prompt;
+      
+      if (tracks.length > 0) {
+        // If the playlist has tracks, analyze existing tracks and suggest more
+        prompt = `You are an AI DJ and music expert. I've selected a playlist called "${playlistDetails.name}".
+        
+        Here are the current tracks in the playlist:
+        ${JSON.stringify(tracks.slice(0, 10), null, 2)}
+        
+        Please do two things:
+        1. Based on the playlist name and existing tracks, suggest 5 additional songs that would fit well with this playlist's theme.
+        2. Suggest how I could remix or transform this playlist into something new and interesting.
+        
+        Be specific about artists, genres, and why these suggestions work well with the playlist theme.`;
+      } else {
+        // If the playlist is empty, suggest tracks based on just the name
+        prompt = `You are an AI DJ and music expert. I've selected a playlist called "${playlistDetails.name}".
+        
+        The playlist is currently empty. Based just on this playlist name:
+        1. Suggest 8-10 songs that would fit perfectly with this playlist's likely theme.
+        2. Suggest how I could remix or transform this playlist once I add songs.
+        
+        Be specific about artists, genres, and why these suggestions work well with the playlist name's implied theme.`;
+      }
+
+      const result = await model.generateContent(prompt);
+      if (!result.response) {
+        throw new Error('No response from Gemini API');
+      }
+
+      const text = result.response.text();
+      if (!text) {
+        throw new Error('Empty response from Gemini API');
+      }
+
+      // Add the AI message to the chat
+      const introMessage: Message = { role: 'assistant', content: `I analyzed your playlist "${playlistDetails.name}". Here are my suggestions:\n\n${text}` };
+      setMessages([introMessage]);
+    } catch (error) {
+      console.error('Error analyzing playlist:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      setMessages([{ 
+        role: 'assistant', 
+        content: `I apologize, but I encountered an error while analyzing your playlist: ${errorMessage}. Please try again.` 
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   const formatMessage = (content: string) => {
     // Remove duplicate numbers at the start of lines
     content = content.replace(/^\d+\.\s*\d+\./gm, (match) => match.split('.')[0] + '.');
@@ -321,6 +453,38 @@ export default function DJInterface() {
                       "Turn into smooth jazz"
                     </motion.button>
                   </div>
+                  
+                  {selectedPlaylist && (
+                    <>
+                      <div className="my-6 flex items-center">
+                        <div className="flex-1 h-[1px] bg-gray-200"></div>
+                        <span className="px-4 text-gray-400 text-[12px] font-medium">OR</span>
+                        <div className="flex-1 h-[1px] bg-gray-200"></div>
+                      </div>
+                      
+                      <motion.button
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={analyzePlaylist}
+                        disabled={isLoading}
+                        className="w-full bg-black text-white px-5 py-2.5 rounded-full text-sm font-medium disabled:opacity-50 transition-all"
+                      >
+                        {isLoading ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Analyzing playlist...</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center gap-2">
+                            <Music className="h-4 w-4" />
+                            <span>Analyze this playlist</span>
+                          </div>
+                        )}
+                      </motion.button>
+                    </>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -388,9 +552,25 @@ export default function DJInterface() {
               className="w-full px-4 py-[14px] text-[15px] text-black bg-white rounded-lg font-inter outline-none cursor-pointer border border-[#F2F2F7] flex items-center justify-between"
               disabled={isLoadingPlaylists}
             >
-              <span className="truncate font-inter text-[14px] text-emerald-500">
-                {selectedPlaylistName || "Choose a playlist to remix with AI"}
-              </span>
+              {selectedPlaylist ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-5 w-5 rounded-full bg-emerald-50 flex items-center justify-center">
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className="h-2 w-2 rounded-full bg-emerald-500"
+                    />
+                  </div>
+                  <span className="truncate font-inter text-[14px] text-black">
+                    {selectedPlaylistName}
+                  </span>
+                </div>
+              ) : (
+                <span className="truncate font-inter text-[14px] text-gray-400">
+                  Choose a playlist to remix with AI
+                </span>
+              )}
               <ChevronDown className={`h-4 w-4 text-black transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
