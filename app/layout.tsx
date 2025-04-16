@@ -34,7 +34,7 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${jetbrains.variable} ${instrument.variable}`}>
       <body
-        className={`${inter.className} bg-gradient-to-b from-background to-muted min-h-screen`}>
+        className={`${inter.className} ${instrument.className} bg-gradient-to-b from-background to-muted min-h-screen`}>
         <SessionProvider>
           {children}
           <Toaster position="top-center" richColors />

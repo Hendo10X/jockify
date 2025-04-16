@@ -5,7 +5,7 @@ import SpotifyProvider from "next-auth/providers/spotify";
 const scope =
   "playlist-read-private playlist-read-collaborative user-read-email user-read-private";
 
-const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [
     SpotifyProvider({
       clientId: process.env.SPOTIFY_CLIENT_ID!,
