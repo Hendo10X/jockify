@@ -62,7 +62,7 @@ export default function Home() {
             whileTap={{ scale: 0.98 }}
             transition={{ delay: 0.4, duration: 0.4 }}
             className="mt-8 px-8 py-3 rounded-full bg-black text-white font-medium hover:bg-gray-900 transition-colors duration-200 text-sm font-inter">
-            Login with spotify
+            Login with Spotify
           </motion.a>
         </motion.div>
       </div>
