@@ -1,10 +1,11 @@
-import { NextAuthOptions } from 'next-auth';
-import NextAuth from 'next-auth/next';
-import SpotifyProvider from 'next-auth/providers/spotify';
+import { NextAuthOptions } from "next-auth";
+import NextAuth from "next-auth/next";
+import SpotifyProvider from "next-auth/providers/spotify";
 
-const scope = 'playlist-read-private playlist-read-collaborative user-read-email user-read-private';
+const scope =
+  "playlist-read-private playlist-read-collaborative user-read-email user-read-private";
 
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   providers: [
     SpotifyProvider({
       clientId: process.env.SPOTIFY_CLIENT_ID!,
@@ -32,4 +33,4 @@ export const authOptions: NextAuthOptions = {
 };
 
 const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST }; 
+export { handler as GET, handler as POST };

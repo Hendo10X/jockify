@@ -2,14 +2,21 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "@/app/components/SessionProvider";
-import { Toaster } from 'sonner';
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains" });
-const instrument = Instrument_Serif({ 
-  subsets: ["latin"], 
-  weight: "400",
-  variable: "--font-instrument" 
+const jetbrains = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains",
+});
+const instrument = Instrument_Serif({
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal"],
+  variable: "--font-instrument",
+  display: "swap",
+  preload: true,
+  adjustFontFallback: true,
 });
 
 export const metadata: Metadata = {
@@ -23,8 +30,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrains.variable} ${instrument.variable}`}>
-      <body className={`${inter.className} bg-gradient-to-b from-background to-muted min-h-screen`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${jetbrains.variable} ${instrument.variable}`}>
+      <body
+        className={`${inter.className} bg-gradient-to-b from-background to-muted min-h-screen`}>
         <SessionProvider>
           {children}
           <Toaster position="top-center" richColors />
