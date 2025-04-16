@@ -55,7 +55,7 @@
   * {
     @apply border-border;
   }
-  
+
   body {
     @apply bg-background text-foreground;
   }
@@ -79,4 +79,8 @@ body {
 
 .font-jetbrains {
   font-family: var(--font-jetbrains);
+}
+
+.font-inter {
+  font-family: var(--font-inter);
 }
