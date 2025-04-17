@@ -4,19 +4,26 @@ import "./globals.css";
 import { SessionProvider } from "@/app/components/SessionProvider";
 import { Toaster } from "sonner";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
 const jetbrains = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-jetbrains",
+  display: "swap",
 });
+
 const instrument = Instrument_Serif({
   subsets: ["latin"],
-  weight: ["400"],
-  style: ["normal"],
+  weight: "400",
+  style: "normal",
   variable: "--font-instrument",
   display: "swap",
   preload: true,
-  adjustFontFallback: true,
+  fallback: ["serif"],
 });
 
 export const metadata: Metadata = {
