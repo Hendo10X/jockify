@@ -2,7 +2,6 @@
 
 Jockify is a modern web application that allows users to transform their Spotify playlists using AI. With a sleek, intuitive interface, users can select their playlists and request AI-powered remixes in various styles, from lofi hip hop to dance remixes.
 
-
 ## Features
 
 - 🔐 **Spotify Integration**: Seamless authentication and playlist access
@@ -32,17 +31,20 @@ Jockify is a modern web application that allows users to transform their Spotify
 ### Environment Setup
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/yourusername/jockify.git
 cd jockify
 ```
 
-2. Install dependencies:
+1. Install dependencies:
+
 ```bash
 npm install
 ```
 
-3. Create a `.env.local` file with the following variables:
+1. Create a `.env.local` file with the following variables:
+
 ```env
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=your_nextauth_secret
@@ -51,7 +53,8 @@ SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
 NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
 ```
 
-4. Start the development server:
+1. Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -66,7 +69,7 @@ npm run dev
 
 ## Project Structure
 
-```
+```text
 jockify/
 ├── app/
 │   ├── api/
